@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divine Love</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh; overflow: hidden; font-family: 'Poppins', Arial, sans-serif;
+            background: radial-gradient(circle at top, #ffdde1 0%, #ee9ca7 40%, #4b2c47 100%);
+            position: relative; color: #000; /* Black text for visibility */
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        /* Rain container */
+        .rain-container { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+        .drop {
+            position: absolute; top: -80px; font-size: clamp(20px, 4vw, 32px); opacity: 0.8;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-80px) translateX(0); opacity: 0; }
+            10% { opacity: 0.9; }
+            100% { transform: translateY(110vh) translateX(40px); opacity: 0; }
+        }
+        /* Content */
+        .content { position: relative; z-index: 2; text-align: center; width: 100%; max-width: 600px; }
+        h1 { font-size: clamp(2rem, 6vw, 3rem); margin-bottom: 10px; color: #ff4d6d; font-family: 'Pacifico', cursive; }
+        /* Centered Container - Key Fix */
+        .container {
+            background: rgba(255, 255, 255, 0.95); padding: clamp(30px, 8vw, 40px); border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;
+            max-width: 500px; width: 90vw; margin: 0 auto; /* Centered */
+            position: relative; transition: all 0.5s ease;
+        }
+        h1#questionTitle { font-family: 'Pacifico', cursive; color: #ff4d6d; font-size: clamp(1.8rem, 7vw, 2.5rem); margin-bottom: 20px; }
+        p#questionText { color: #333; font-size: clamp(1rem, 4vw, 1.2rem); margin-bottom: 30px; line-height: 1.4; /* High visibility */ }
+        .btn-group { display: flex; justify-content: center; gap: 20px; position: relative; height: 60px; }
+        button {
+            padding: clamp(12px, 4vw, 15px) 30px; font-size: clamp(1rem, 3.5vw, 1.1rem); border: none; border-radius: 50px;
+            cursor: pointer; transition: transform 0.2s; font-family: 'Poppins', sans-serif; font-weight: 600; min-height: 50px;
+        }
+        .btn-yes { background-color: #ff4d6d; color: white; box-shadow: 0 4px 15px rgba(255,77,109,0.4); }
+        .btn-yes:hover { transform: scale(1.05); background-color: #ff2a50; }
+        .btn-no { background-color: #e0e0e0; color: #555; position: absolute; /* For moving */ }
+        /* Final screen */
+        .final-screen { display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .heart-frame { width: clamp(200px, 70vw, 300px); height: clamp(200px, 70vw, 300px); position: relative; animation: heartbeat 1.5s infinite; }
+        .heart-shape {
+            width: 100%; height: 100%; background-color: #ff4d6d;
+            clip-path: path("M150 270 C 150 270 300 180 300 90 C 300 20 230 0 180 20 C 150 40 150 40 150 40 C 150 40 150 40 120 20 C 70 0 0 20 0 90 C 0 180 150 270 150 270 Z");
+            overflow: hidden; position: relative; display: flex; justify-content: center; align-items: center;
+        }
+        .slide-img { width: 100%; height: 100%; object-fit: cover; position: absolute; opacity: 0; transition: opacity 1s ease-in-out; }
+        .slide-img.active { opacity: 1; }
+        .final-text { margin-top: 30px; font-family: 'Pacifico', cursive; color: #ff4d6d; font-size: clamp(1.5rem, 5vw, 2rem); animation: fadeIn 2s; text-align: center; }
+        @keyframes heartbeat {
+            0%, 60%, 100% { transform: scale(1); }
+            15%, 45% { transform: scale(1.1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .floating-heart {
+            position: absolute; color: rgba(255,255,255,0.6); font-size: clamp(15px, 3vw, 20px);
+            animation: floatUp 5s linear infinite; z-index: -1;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+        /* Audio button */
+        .audio-control {
+            position: fixed; bottom: 20px; right: 20px; z-index: 3; background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; padding: 10px 18px; color: #fff;
+            backdrop-filter: blur(6px); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+        }
+        .audio-control:hover { background: rgba(255,255,255,0.25); }
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container { width: 95vw; padding: 25px; }
+            .btn-group { gap: 10px; }
+            button { padding: 15px 25px; flex: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background rain -->
+    <div class="rain-container" id="rainContainer"></div>
+    <!-- Content -->
+    <div class="content">
+        <h1>Divine Love</h1>
+        <div class="container" id="mainCard">
+            <h1 id="questionTitle">Hi Divya Bangaram!</h1>
+            <p id="questionText">I have to ask you Some Serious questions...</p>
+            <div class="btn-group">
+                <button class="btn-yes" onclick="nextQuestion()">Yes ❤️</button>
+                <button class="btn-no" id="noBtn" onmouseover="moveButtonNo()">No</button>
+            </div>
+        </div>
+        <div class="final-screen" id="finalScreen">
+            <div class="heart-frame">
+                <div class="heart-shape">
+                    <img src="d1.jpeg" class="slide-img active" alt="Love Image">
+                    <img src="d2.jpeg" class="slide-img" alt="Love Image">
+                    <img src="d3.jpeg" class="slide-img" alt="Love Image">
+                    <img src="d4.jpeg" class="slide-img" alt="Love Image">
+                    <img src="d5.jpeg" class="slide-img" alt="Love Image">
+                </div>
+            </div>
+            <div class="final-text">
+                Thank You Divya Bangaram<br>
+                You will always be my Love Life!<br>
+                My Body and Sole will always Belongs to You
+            </div>
+        </div>
+    </div>
+    <!-- Background music -->
+    <audio id="bgAudio" src="lovemelikeyoudo.mp3" loop></audio>
+    <!-- Mute/Unmute button -->
+    <button class="audio-control" id="audioToggle">
+        <span class="icon" id="audioIcon">▶</span>
+        <span id="audioLabel">Play music</span>
+    </button>
+
+    <script>
+        // Rain effect
+        const symbols = ['💕', '❤️', '💖', '💝', '✨'];
+        const dropCount = 40;
+        const container = document.getElementById('rainContainer');
+        function createDrop() {
+            const div = document.createElement('div');
+            div.className = 'drop';
+            div.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            const startLeft = Math.random() * 100 + 'vw';
+            const size = (24 + Math.random() * 20) + 'px';
+            const duration = (10 + Math.random() * 10) + 's';
+            const delay = Math.random() * -duration;
+            div.style.left = startLeft;
+            div.style.fontSize = size;
+            div.style.animationDuration = duration;
+            div.style.animationDelay = delay + 's';
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 25000);
+        }
+        for (let i = 0; i < dropCount; i++) createDrop();
+        setInterval(createDrop, 300);
+
+        // Audio control
+        const audio = document.getElementById('bgAudio');
+        const toggleBtn = document.getElementById('audioToggle');
+        const iconSpan = document.getElementById('audioIcon');
+        const labelSpan = document.getElementById('audioLabel');
+        let isPlaying = false;
+        async function toggleAudio() {
+            try {
+                if (!isPlaying) {
+                    await audio.play(); isPlaying = true;
+                    iconSpan.textContent = '🔇'; labelSpan.textContent = 'Mute music';
+                } else {
+                    audio.pause(); isPlaying = false;
+                    iconSpan.textContent = '▶'; labelSpan.textContent = 'Play music';
+                }
+            } catch (e) { console.warn('Audio play prevented by browser', e); }
+        }
+        toggleBtn.addEventListener('click', toggleAudio);
+
+        // Questions config
+        const questions = [
+            "May i ask you Some Serious questions...? ❤️",
+            "Do you believe in love at first sight...? 💕",
+            "Do you Belive we are made for eachother...? ✨",
+            "Will you love me unconditionally with your body and sole...? 💖",
+            "Will you Marry me and be mother for my Children...? 💝",
+            "Will you be stay with me forever no matter what happens...??? ❤️"
+        ];
+        let currentStep = 0;
+        const titleEl = document.getElementById('questionTitle');
+        const textEl = document.getElementById('questionText');
+        const cardEl = document.getElementById('mainCard');
+        const finalScreenEl = document.getElementById('finalScreen');
+        const noBtn = document.getElementById('noBtn');
+
+        function updateText() {
+            if (currentStep < questions.length) {
+                if (currentStep === 0) titleEl.innerText = 'Hi Divya Bangaram!';
+                else if (currentStep === questions.length - 1) titleEl.innerText = 'One last thing...';
+                else titleEl.innerText = `Question ${currentStep + 1}`;
+                textEl.innerText = questions[currentStep];
+                noBtn.style.position = 'relative'; noBtn.style.top = '0'; noBtn.style.left = '0';
+            } else {
+                showEnding();
+            }
+        }
+
+        function moveButtonNo() {
+            const containerRect = cardEl.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
+            noBtn.style.position = 'absolute';
+            const maxX = containerRect.width - btnRect.width - 40;
+            const maxY = containerRect.height - btnRect.height - 40;
+            const randomX = (Math.random() * maxX * 2) - maxX;
+            const randomY = (Math.random() * maxY * 2) - maxY;
+            noBtn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+        }
+
+        function nextQuestion() {
+            currentStep++;
+            updateText();
+        }
+
+        function showEnding() {
+            cardEl.style.display = 'none';
+            finalScreenEl.style.display = 'flex';
+            startSlideshow();
+            createFloatingHearts();
+        }
+
+        function startSlideshow() {
+            const slides = document.querySelectorAll('.slide-img');
+            let slideIndex = 0;
+            setInterval(() => {
+                slides[slideIndex].classList.remove('active');
+                slideIndex = (slideIndex + 1) % slides.length;
+                slides[slideIndex].classList.add('active');
+            }, 5000);
+        }
+
+        function createFloatingHearts() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('floating-heart');
+                heart.innerHTML = '💖';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 2000);
+            }, 300);
+        }
+
+        // Initialize
+        updateText();
+    </script>
+</body>
+</html>
